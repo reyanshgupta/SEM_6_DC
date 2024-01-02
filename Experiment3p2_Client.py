@@ -1,8 +1,9 @@
 from socket import *
 
 def client():
+    serverip = input("Enter server's IP: ")
     client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.connect(("localhost", 12345))
+    client_socket.connect((serverip, 12345))
 
     while True:
         message = input("Enter a message to send to the server (or 'quit' to exit): ")

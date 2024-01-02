@@ -4,7 +4,8 @@ import time
 
 def server():
     server_socket = socket(AF_INET, SOCK_STREAM)
-    server_socket.bind(("localhost", 12345))
+    server_socket.bind(("0.0.0.0", 12345))
+    # server_socket.bind(("136.232.244.238", 8080))
     server_socket.listen(5) 
     print("Server is listening...")
 
