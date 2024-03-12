@@ -1,45 +1,45 @@
-class BullyAlgorithm:
-    def __init__(self, process_id, num_processes):
-        self.process_id = process_id
-        self.num_processes = num_processes
-        self.coordinator = None
-        self.processes = [True] * num_processes
+class Process:
+    def __init__(self, pid):
+        self.pid = pid  
+        self.active = True  
+    def __str__(self):
+        return f"Process {self.pid}"
 
-    def start_election(self):
-        print(f"Process {self.process_id} starts election.")
-        higher_processes = [i for i in range(self.process_id + 1, self.num_processes)]
-        for i in higher_processes:
-            if self.processes[i]:
-                print(f"Process {self.process_id} sends election message to process {i}.")
-                self.receive_election(self.process_id, i)
+    def start_election(self, processes):
+        print(f"{self} starts an election.")
+        answers = []
+        for p in processes:
+            if p.pid > self.pid:
+                print(f"{self} sends election message to {p}")
+                if p.active:
+                    answers.append(p.receive_election(self, processes))
+        if not answers:
+            self.announce_victory(processes)
+        else:
+            print(f"{self} received answers from others, stepping down.")
 
-        # If no higher process responds, this process becomes coordinator
-        if not any(self.processes[i] for i in higher_processes):
-            self.coordinator = self.process_id
-            print(f"Process {self.process_id} has elected itself as coordinator.")
+    def receive_election(self, initiator, processes):
+        if self.active:
+            print(f"{self} responds to {initiator}'s election message.")
+            self.start_election(processes)
+            return True
+        return False
 
-    def receive_election(self, sender_id, receiver_id):
-        print(f"Process {receiver_id} receives election message from process {sender_id}.")
+    def announce_victory(self, processes):
+        for p in processes:
+            if p.pid != self.pid:
+                print(f"{self} sends victory message to {p}")
+        print(f"{self} is the new coordinator.\n")
 
-        if self.process_id > receiver_id:
-            print(f"Process {receiver_id} sends OK message to process {sender_id}.")
-            self.receive_ok(receiver_id, sender_id)
+def simulate_bully_algorithm(process_ids):
+    processes = [Process(pid) for pid in process_ids]
+    processes[1].start_election(processes)  
 
-    def receive_ok(self, sender_id, receiver_id):
-        print(f"Process {receiver_id} receives OK message from process {sender_id}.")
-        self.coordinator = sender_id
+    #Simulating failure
+    processes[3].active = False
+    print("After deactivating a process:\n")
+    processes[2].start_election(processes)
 
-    def run(self):
-        self.start_election()
-
-        while self.coordinator is None:
-            pass
-
-        print(f"Process {self.process_id} has elected process {self.coordinator} as coordinator.")
-
-# Example usage
-num_processes = 5
-process_id = 2
-
-algorithm = BullyAlgorithm(process_id, num_processes)
-algorithm.run()
+if __name__ == "__main__":
+    process_ids = [1, 2, 3, 4, 5]  
+    simulate_bully_algorithm(process_ids)
